@@ -4,3 +4,4 @@ import { CookieOptions } from 'express';
 dotenv.config();
 
 export const originalUrl = process.env.ORIGINAL_URL;
+export const isProduction = false;
