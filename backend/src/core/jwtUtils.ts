@@ -6,10 +6,7 @@ import { tokenInfo } from '../config';
 export class AccessTokenPayload {
   iss: string;
   aud: string;
-  sub: string; // userId
-  tid: string; // tenantId
-  wid: string; // workspaceId
-  role: 'ADMIN' | 'EDITOR' | 'VIEWER';
+  sub: string; 
   iat: number;
   exp: number;
 
@@ -17,17 +14,11 @@ export class AccessTokenPayload {
     issuer: string,
     audience: string,
     userId: number,
-    tenantId: number,
-    workspaceId: number,
-    role: 'ADMIN' | 'EDITOR' | 'VIEWER',
     validity: number,
   ) {
     this.iss = issuer;
     this.aud = audience;
     this.sub = userId.toString();
-    this.tid = tenantId.toString();
-    this.wid = workspaceId.toString();
-    this.role = role;
     this.iat = Math.floor(Date.now() / 1000);
     this.exp = this.iat + validity;
   }
@@ -38,7 +29,6 @@ export class RefreshTokenPayload {
   iss: string;
   aud: string;
   sub: string; // userId
-  tid: string; // tenantId
   iat: number;
   exp: number;
 
@@ -46,13 +36,11 @@ export class RefreshTokenPayload {
     issuer: string,
     audience: string,
     userId: number,
-    tenantId: number,
     validity: number,
   ) {
     this.iss = issuer;
     this.aud = audience;
     this.sub = userId.toString();
-    this.tid = tenantId.toString();
     this.iat = Math.floor(Date.now() / 1000);
     this.exp = this.iat + validity;
   }
@@ -67,7 +55,7 @@ async function readPrivateKey(): Promise<string> {
     return tokenInfo.jwtPrivateKey;
 }
 
-async function encode<T extends object>(payload: T): Promise<string> {
+async function encode<T extends object>(p0: RefreshTokenPayload, payload: T): Promise<string> {
     const cert = await readPrivateKey();
     if (!cert) throw new InternalError('Token generation failure');
     //@ts-expect-error cert is valid

@@ -10,88 +10,65 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Tenant {
-  id        Int        @id @default(autoincrement())
-  name      String
-  createdAt DateTime   @default(now()) @map("created_at")
-
-  users      User[]
-  workspaces Workspace[]
-
-  @@map("tenant")
-}
-
 model User {
-  id        Int    @id @default(autoincrement())
-  tenantId  Int    @map("tenant_id")
-  email     String 
-  name      String
-  password  String
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  name     String
+  password String
 
-  lastWorkspaceId   Int? 
+  lastWorkspaceId Int?
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  tenant            Tenant            @relation(fields: [tenantId], references: [id])
-  workspaceMembers  WorkspaceMember[]
-  createdPages      Page[]
-
-  @@unique([tenantId, email])  
-  @@map("user")
+  workspaceMembers WorkspaceMember[]
+  createdPages     Page[]
+  workspaces       Workspace[]
+  workspaceInvites WorkspaceInvite[]
 }
 
 model Workspace {
-  id        Int      @id @default(autoincrement())
-  tenantId  Int      @map("tenant_id")
-  name      String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id      Int    @id @default(autoincrement())
+  name    String
+  ownerId Int
 
-  tenant   Tenant            @relation(fields: [tenantId], references: [id])
-  members  WorkspaceMember[]
-  pages    Page[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@map("workspace")
+  owner            User              @relation(fields: [ownerId], references: [id])
+  members          WorkspaceMember[]
+  pages            Page[]
+  workspaceInvites WorkspaceInvite[]
 }
 
 model WorkspaceMember {
   id          Int      @id @default(autoincrement())
-  tenantId    Int      @map("tenant_id") 
-  workspaceId Int      @map("workspace_id")
-  userId      Int      @map("user_id")
+  workspaceId Int
+  userId      Int
   role        RoleType
-  joinedAt    DateTime @default(now()) @map("joined_at")
+  joinedAt    DateTime @default(now())
 
-  tenant    Tenant   @relation(fields: [tenantId], references: [id])
   workspace Workspace @relation(fields: [workspaceId], references: [id])
   user      User      @relation(fields: [userId], references: [id])
 
-  @@unique([workspaceId, userId]) 
-  @@map("workspace_member")
-
-  @@index([userId])
-  @@index([workspaceId])
+  @@unique([workspaceId, userId])
 }
 
 model Page {
-  id           Int       @id @default(autoincrement())
-  tenantId     Int       @map("tenant_id")
-  workspaceId  Int       @map("workspace_id")
-  parentPageId Int?      @map("parent_page_id")
+  id           Int      @id @default(autoincrement())
+  workspaceId  Int      @map("workspace_id")
+  parentPageId Int?     @map("parent_page_id")
   title        String
-  createdBy    Int       @map("created_by")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy    Int      @map("created_by")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
-  tenant      Tenant  @relation(fields: [tenantId], references: [id])
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
-  creator     User    @relation(fields: [createdBy], references: [id])
-  parentPage  Page?   @relation("PageHierarchy", fields: [parentPageId], references: [id])
-  childPages  Page[]  @relation("PageHierarchy")
-  blocks      Block[]
+  workspace  Workspace @relation(fields: [workspaceId], references: [id])
+  creator    User      @relation(fields: [createdBy], references: [id])
+  parentPage Page?     @relation("PageHierarchy", fields: [parentPageId], references: [id])
+  childPages Page[]    @relation("PageHierarchy")
+  blocks     Block[]
 
-  @@index([tenantId])
   @@index([workspaceId])
   @@map("page")
 }
@@ -113,7 +90,6 @@ enum BlockType {
 
 model Block {
   id       Int       @id @default(autoincrement())
-  tenantId  Int       @map("tenant_id")
   pageId   Int       @map("page_id")
   type     BlockType
   position Int
@@ -122,10 +98,24 @@ model Block {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  tenant Tenant @relation(fields: [tenantId], references: [id])
   page Page @relation(fields: [pageId], references: [id])
 
-  @@index([tenantId])
   @@index([pageId])
   @@map("block")
+}
+
+model WorkspaceInvite {
+  id          Int      @id @default(autoincrement())
+  workspaceId Int
+  email       String
+  role        RoleType
+  token       String   @unique
+  invitedBy   Int
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
+  inviter   User      @relation(fields: [invitedBy], references: [id])
+
+  @@index([workspaceId])
 }

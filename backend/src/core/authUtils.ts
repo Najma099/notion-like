@@ -1,83 +1,62 @@
 import { AuthFailureError, InternalError } from './ApiError';
-import { ProtectedRequest, Tokens } from './../types/app-requests';
-import JWT, { AccessTokenPayload, RefreshTokenPayload} from './jwtUtils';
+import { Tokens } from '../types/app-requests';
+import JWT, { AccessTokenPayload, RefreshTokenPayload } from './jwtUtils';
 import { tokenInfo } from './../config';
-import brcyptjs from 'bcryptjs';
-import { User } from '@prisma/client'
+import bcrypt from 'bcryptjs';
+import { User } from '@prisma/client';
 
-export const getAccessToken = (req: ProtectedRequest) => {
-    const authHeader = req.headers.authorization;
-    if(authHeader?.startsWith('Bearer ')) {
-        return authHeader.split(' ')[1];
-    }
+// Get access token from Authorization header only
+export const getAccessToken = (req: { headers: { authorization?: string } }): string => {
+  const authHeader = req.headers.authorization;
+  if (authHeader?.startsWith('Bearer ')) {
+    return authHeader.split(' ')[1];
+  }
+  throw new AuthFailureError('Access Token Missing');
+};
 
-    const cookieToken: string | undefined = req.cookies?.accessToken;
-    if(cookieToken && cookieToken.trim().length > 0) {
-        return cookieToken;
-    }
-    throw new AuthFailureError('Access Token Missing');
-}
+// For now, refresh token is optional; can remove cookie checks
+export const getRefreshedToken = (req: { body?: { refreshToken?: string } }): string => {
+  if (req.body?.refreshToken) {
+    return req.body.refreshToken;
+  }
+  throw new AuthFailureError('Refresh Token is missing');
+};
 
-
-export const getRefreshedToken = (req: ProtectedRequest) => {
-    if(req.body?.refreshToken) {
-        return req.body.refreshToken;
-    }
-
-    if(req.cookies?.refreshToken) {
-        return req.cookies.refreshToken;
-    }
-    throw new AuthFailureError('Refresh Token is missing');
-}
-
+// Validate access token payload
 export const validateAccessToken = (payload: AccessTokenPayload): boolean => {
   if (
     !payload ||
     payload.iss !== tokenInfo.issuer ||
     payload.aud !== tokenInfo.audience ||
-    !/^\d+$/.test(payload.sub) ||
-    !/^\d+$/.test(payload.tid) ||
-    !/^\d+$/.test(payload.wid) ||
-    !payload.role
+    !/^\d+$/.test(payload.sub)
   ) {
     throw new AuthFailureError('Invalid Access Token');
   }
   return true;
 };
 
+// Validate refresh token payload
 export const validateRefreshToken = (payload: RefreshTokenPayload): boolean => {
   if (
     !payload ||
     payload.iss !== tokenInfo.issuer ||
     payload.aud !== tokenInfo.audience ||
-    !/^\d+$/.test(payload.sub) ||
-    !/^\d+$/.test(payload.tid)
+    !/^\d+$/.test(payload.sub)
   ) {
     throw new AuthFailureError('Invalid Refresh Token');
   }
   return true;
 };
 
-
-export const createTokens = async (
-  user: User,
-  tenantId: number,
-  workspaceId: number,
-  role: 'ADMIN' | 'EDITOR' | 'VIEWER',
-  accessTokenKey: string,
-  refreshTokenKey: string,
-): Promise<Tokens> => {
-
+// Create JWT tokens (access + refresh)
+export const createTokens = async (userId: number): Promise<Tokens> => {
   const accessToken = await JWT.encode(
     new AccessTokenPayload(
       tokenInfo.issuer,
       tokenInfo.audience,
-      user.id,
-      tenantId,
-      workspaceId,
-      role,
-      tokenInfo.accessTokenValidity,
-    ),
+      userId,
+      tokenInfo.accessTokenValidity
+    ), { }
   );
 
   if (!accessToken) throw new InternalError();
@@ -86,10 +65,9 @@ export const createTokens = async (
     new RefreshTokenPayload(
       tokenInfo.issuer,
       tokenInfo.audience,
-      user.id,
-      tenantId,
-      tokenInfo.refreshTokenValidity,
-    ),
+      userId,
+      tokenInfo.refreshTokenValidity
+    ), { }
   );
 
   if (!refreshToken) throw new InternalError();
@@ -97,7 +75,7 @@ export const createTokens = async (
   return { accessToken, refreshToken };
 };
 
-
-export const isPasswordCorrect = async function (userPassword: string, hashedPassword: string) {
-    return await brcyptjs.compare(userPassword, hashedPassword);
+// Verify password
+export const isPasswordCorrect = async (userPassword: string, hashedPassword: string) => {
+  return await bcrypt.compare(userPassword, hashedPassword);
 };

@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { originalUrl } from './config.js'
-import router from './routes/index.js' 
+import router from './routes/auth/index.js' 
 import { errorHandler } from './middleware/error.middleware.js'
 import { NotFoundError } from './core/ApiError.js'
 import cookieParser from 'cookie-parser';
