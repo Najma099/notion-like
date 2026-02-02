@@ -25,6 +25,7 @@ model User {
   createdPages     Page[]
   workspaces       Workspace[]
   workspaceInvites WorkspaceInvite[]
+  keystores        Keystore[]
 }
 
 model Workspace {
@@ -118,4 +119,18 @@ model WorkspaceInvite {
   inviter   User      @relation(fields: [invitedBy], references: [id])
 
   @@index([workspaceId])
+}
+
+model Keystore {
+  id           Int      @id @default(autoincrement())
+  clientId     Int
+  primaryKey   String
+  secondaryKey String
+  status       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
 }

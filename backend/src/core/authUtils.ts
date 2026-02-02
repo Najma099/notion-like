@@ -4,6 +4,8 @@ import JWT, { AccessTokenPayload, RefreshTokenPayload } from './jwtUtils';
 import { tokenInfo } from './../config';
 import bcrypt from 'bcryptjs';
 import { User } from '@prisma/client';
+import crypto from 'crypto';
+import * as KeystoreRepo from '../database/repository/keystoreRepo';
 
 // Get access token from Authorization header only
 export const getAccessToken = (req: { headers: { authorization?: string } }): string => {
@@ -49,28 +51,33 @@ export const validateRefreshToken = (payload: RefreshTokenPayload): boolean => {
 };
 
 // Create JWT tokens (access + refresh)
-export const createTokens = async (userId: number): Promise<Tokens> => {
+export const createTokens = async (userId: number) => {
+  const accessTokenKey = crypto.randomBytes(64).toString('hex');
+  const refreshTokenKey = crypto.randomBytes(64).toString('hex');
+
+  await KeystoreRepo.create(userId, accessTokenKey, refreshTokenKey);
+
   const accessToken = await JWT.encode(
     new AccessTokenPayload(
       tokenInfo.issuer,
       tokenInfo.audience,
       userId,
-      tokenInfo.accessTokenValidity
-    ), { }
+      accessTokenKey,
+      tokenInfo.accessTokenValidity,
+    ),
+    {},
   );
-
-  if (!accessToken) throw new InternalError();
 
   const refreshToken = await JWT.encode(
     new RefreshTokenPayload(
       tokenInfo.issuer,
       tokenInfo.audience,
       userId,
-      tokenInfo.refreshTokenValidity
-    ), { }
+      refreshTokenKey,
+      tokenInfo.refreshTokenValidity,
+    ),
+    {},
   );
-
-  if (!refreshToken) throw new InternalError();
 
   return { accessToken, refreshToken };
 };

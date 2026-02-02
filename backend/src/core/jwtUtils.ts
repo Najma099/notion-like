@@ -7,6 +7,7 @@ export class AccessTokenPayload {
   iss: string;
   aud: string;
   sub: string; 
+  prm: string; 
   iat: number;
   exp: number;
 
@@ -14,11 +15,13 @@ export class AccessTokenPayload {
     issuer: string,
     audience: string,
     userId: number,
+    primaryKey: string,
     validity: number,
   ) {
     this.iss = issuer;
     this.aud = audience;
     this.sub = userId.toString();
+    this.prm = primaryKey;
     this.iat = Math.floor(Date.now() / 1000);
     this.exp = this.iat + validity;
   }
@@ -29,6 +32,7 @@ export class RefreshTokenPayload {
   iss: string;
   aud: string;
   sub: string; // userId
+  prm: string;
   iat: number;
   exp: number;
 
@@ -36,11 +40,13 @@ export class RefreshTokenPayload {
     issuer: string,
     audience: string,
     userId: number,
+    secondaryKey: string,
     validity: number,
   ) {
     this.iss = issuer;
     this.aud = audience;
     this.sub = userId.toString();
+    this.prm = secondaryKey;
     this.iat = Math.floor(Date.now() / 1000);
     this.exp = this.iat + validity;
   }
