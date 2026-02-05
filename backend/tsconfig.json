@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "node16",
     "esModuleInterop": true,
     "target": "ESNext",
     "allowJs": false,
@@ -9,11 +9,11 @@
     "strict": true,
     "strictFunctionTypes": false,
     "noImplicitThis": false,
-    "moduleResolution": "node",
+    "moduleResolution": "node16",
     "resolveJsonModule": true,
     "sourceMap": true,
     "outDir": "dist",
-    "baseUrl": ".",
+    "rootDir": "src",
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,

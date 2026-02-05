@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { asyncHandler } from '../../core/asyncHandler';
 import { AuthFailureError, AccessTokenError } from '../../core/ApiError';
-import JWT from '../../core/jwtUtils';
+import JWT, { AccessTokenPayload } from '../../core/jwtUtils';
 import { getAccessToken, validateAccessToken } from '../../core/authUtils';
 import * as UserRepo from '../../database/repository/userRepo';
 import * as KeystoreRepo from '../../database/repository/keystoreRepo';
@@ -19,19 +19,19 @@ export default router.use(
 
     try {
       const payload = await JWT.validate(accessToken);
-
-      validateAccessToken(payload);
-
+      validateAccessToken(payload as AccessTokenPayload);
+      
       const userId = Number(payload.sub);
       if (isNaN(userId)) {
         throw new AuthFailureError('Invalid user id in token');
       }
-
+      
       const user = await UserRepo.findById(userId);
       if (!user) {
         throw new AuthFailureError('User not registered');
       }
-
+      console.log(payload);
+      console.log(user.id);
       const keystore = await KeystoreRepo.find(
         user.id,
         payload.prm,
