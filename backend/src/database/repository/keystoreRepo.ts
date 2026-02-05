@@ -31,6 +31,22 @@ export async function find(
   });
 }
 
+export async function findByRefreshKey(
+  userId: number,
+  refreshKey: string,
+) {
+  const prisma = getPrismaClient();
+  return prisma.keystore.findFirst({
+    where: {
+      user: {
+        id: userId,
+      },
+      secondaryKey: refreshKey,
+    },
+  });
+}
+
+
 export async function remove(id: number) {
   const prisma = getPrismaClient();
   return prisma.keystore.delete({ where: { id } });

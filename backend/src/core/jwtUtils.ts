@@ -1,5 +1,5 @@
 import { promisify } from 'util';
-import { sign, verify, TokenExpiredError as JwtTokenExpiredError } from 'jsonwebtoken';
+import { sign, verify, TokenExpiredError as JwtTokenExpiredError, JwtPayload } from 'jsonwebtoken';
 import { InternalError, BadTokenError, TokenExpiredError } from './ApiError';
 import { tokenInfo } from '../config';
 
@@ -87,7 +87,7 @@ async function validate<T extends object>(token: string) {
 /**
  * Returns the decoded payload if the signature is valid even if it is expired
  */
-async function decode<T extends object>(token: string) {
+async function decode<T extends object>(token: string): Promise<JwtPayload> {
     const cert = await readPublicKey();
     try {
         // @ts-expect-error cert is valid
