@@ -87,6 +87,10 @@ class ApiClient {
 
   private async refreshAccessToken(): Promise<string> {
   const refreshToken = this.getRefreshToken();
+  if (!refreshToken || refreshToken === "undefined") {
+    this.clearTokens();
+    throw new Error("No refresh token found");
+  }
   const expiredToken = this.getAccessToken();
 
   try {
@@ -112,7 +116,7 @@ class ApiClient {
     //console.error("Refresh failed, clearing and redirecting", err);
     this.clearTokens();
     // Redirect to root "/" to avoid the 404 on "/signin"
-    if (typeof window !== "undefined") window.location.href = "/";
+    //if (typeof window !== "undefined") window.location.href = "/";
     throw err;
   }
 }
@@ -157,8 +161,18 @@ class ApiClient {
 
   // Generalized request handler to unwrap the "data" field
   private async request<T>(config: AxiosRequestConfig): Promise<T> {
+   try {
     const res = await this.axiosInstance.request<BackendResponse<T>>(config);
     return res.data.data;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    // 🔥 FORCE AXIOS TO PASS THE BACKEND ERROR DOWN
+    // If the error has a response, it's our 400 "Password too short" error.
+    if (error.response) {
+      throw error; 
+    }
+    throw new Error("Network error");
+  }
   }
 
   public get<T>(url: string, config?: AxiosRequestConfig) {
