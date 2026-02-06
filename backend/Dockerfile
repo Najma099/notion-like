@@ -10,6 +10,8 @@ COPY --chown=node:node . .
 
 RUN npm install 
 
+RUN npx prisma generate && npm run build
+
 # container exposed network port number
 EXPOSE 9090
 
