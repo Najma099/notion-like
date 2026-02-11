@@ -8,9 +8,13 @@
 import { Router } from 'express';
 import workspaceRouter from './workspace.route';
 import workspaceIdRouter from './workspaceId.route';
+import pagesRoute from './pages.route';
+import blockRoute from './blocks.route';
 
 const router = Router();
 router.use('/', workspaceRouter);
 router.use('/:workspaceId',  workspaceIdRouter);
+router.use('/:workspaceId/pages', pagesRoute);
+router.use('/:workspaceId/pages/:pageId/blocks', blockRoute);
 
 export default router;
