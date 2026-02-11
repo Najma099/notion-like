@@ -31,7 +31,6 @@ export const createWorkspace = async (
     return workspace;
 };
 
-
 export async function getOrCreateDefaultWorkspace(userId: number) {
     return prisma.$transaction(async(tx) => {
         const workspace = await tx.workspace.findMany({
@@ -55,7 +54,6 @@ export async function create(userId: number, name:string) {
    });
 }
 
-
 export async function getAllWorkspacesForUser(userId: number) {
   return prisma.workspace.findMany({
     where: {
@@ -71,4 +69,57 @@ export async function getAllWorkspacesForUser(userId: number) {
     },
     orderBy: { id: 'asc' },
   });
+}
+
+export async function getWorkspaceById(workspaceId: number, userId: number) {
+    return prisma.workspace.findFirst({
+        where: {
+            id: workspaceId,
+            members: {
+                some: {
+                    userId
+                }
+            }
+        }
+    })
+};
+
+
+export async function updateWorkspace(workspaceId: number, name: string) {
+    const updated = await prisma.workspace.update({
+        where: {
+            id: workspaceId
+        },
+        data: {
+            name
+        }
+    })
+}
+
+export async function deleteWorkspace(workspaceId: number) {
+    return prisma.$transaction([
+        prisma.block.deleteMany({ where: {
+            page: {
+                workspaceId
+            }
+        }}),
+
+        prisma.page.deleteMany({
+            where: {
+                workspaceId
+            }
+        }),
+
+        prisma.workspaceMember.deleteMany({
+            where: {
+                workspaceId
+            }
+        }),
+
+        prisma.workspace.delete({
+            where:{
+                id: workspaceId
+            }
+        })
+    ]);
 }

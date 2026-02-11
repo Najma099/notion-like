@@ -1,15 +1,3 @@
-//     /workspace
-//      /GET(get all the workspace)
- //      /post(add new workspace)
-
-
- ///workspace/:workspaceid
- //     /get(get all the pages | get all the member of the workspace)
- //     /post(add new pages)
- //     /patch(fix the name of the particular workspace)
- //.    / delete(delete the particulular workspace)
- //. 
-
 
 // workspace/:workspaceid/user
 //.     post(add user into the workspace)
@@ -18,9 +6,11 @@
 
 
 import { Router } from 'express';
-import getAllWorkspaceRouter from './workspace.route';
+import workspaceRouter from './workspace.route';
+import workspaceIdRouter from './workspaceId.route';
 
 const router = Router();
-router.use('/', getAllWorkspaceRouter);
+router.use('/', workspaceRouter);
+router.use('/:workspaceId',  workspaceIdRouter);
 
 export default router;
