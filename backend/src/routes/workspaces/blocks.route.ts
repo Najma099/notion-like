@@ -32,9 +32,13 @@ router.post(
         const pageId = Number(req.params.pageId);
         const {type, content, position} = req.body;
 
-        const block = await BlockRepo.createBlock({
-            type, content, position, pageId
-        })
+        const block = await BlockRepo.createBlock(
+            pageId,
+            type,
+            content,
+            position
+        );
+
         new SuccessResponse('Block created', block).send(res);
     })
 );

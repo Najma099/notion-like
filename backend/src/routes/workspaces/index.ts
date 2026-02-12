@@ -13,8 +13,7 @@ import blockRoute from './blocks.route';
 
 const router = Router();
 router.use('/', workspaceRouter);
-router.use('/:workspaceId',  workspaceIdRouter);
-router.use('/:workspaceId/pages', pagesRoute);
 router.use('/:workspaceId/pages/:pageId/blocks', blockRoute);
-
+router.use('/:workspaceId/pages', pagesRoute);
+router.use('/:workspaceId',  workspaceIdRouter);
 export default router;

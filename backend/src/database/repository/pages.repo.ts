@@ -89,6 +89,16 @@ export async function getPageById(pageId: number) {
 }
 
 export async function createPage(workspaceId: number, userId: number, title?: string, parentPageId?: number | null) {
+    if (parentPageId) {
+      const parent = await prisma.page.findUnique({
+        where: { id: parentPageId },
+        select: { workspaceId: true },
+      });
+
+      if (!parent || parent.workspaceId !== workspaceId) {
+        throw new Error('Invalid parent page');
+      }
+    }
     return prisma.page.create({
         data: {
             workspaceId,
