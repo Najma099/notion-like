@@ -3,6 +3,7 @@ import { AuthUser } from './user';
 import { Keystore } from '@prisma/client';
 
 export interface ProtectedRequest extends Request {
+    userRole: string;
     user: AuthUser;
     keystore: Keystore;
     accessToken: string;
