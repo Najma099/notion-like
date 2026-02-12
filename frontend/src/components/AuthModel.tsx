@@ -6,6 +6,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import apiClient from "@/lib/apiClient";
 import type { AuthResponse } from "@/types/auth.type";
+import { useAuth } from "@/hooks/useAuth";
+import { useWorkspace } from "@/context/WorkspaceContext";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -15,6 +17,8 @@ interface AuthModalProps {
 
 export default function AuthModal({ isOpen, onClose, initialMode = "login" }: AuthModalProps) {
   const router = useRouter();
+  const { refreshUser } = useAuth(); 
+  const { refreshWorkspaces } = useWorkspace();
   const searchParams = useSearchParams();
   const [authMode, setAuthMode] = useState(initialMode);
   const [isLoading, setIsLoading] = useState(false);
@@ -32,7 +36,11 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }: Au
       
       apiClient.setTokens(res.tokens);
       localStorage.setItem("user", JSON.stringify(res.user));
-      
+
+      await refreshUser();
+      await refreshWorkspaces();
+
+   
       toast.success(authMode === "register" ? "Welcome to Notion!" : "Welcome back!");
       onClose();
       

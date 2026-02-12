@@ -28,20 +28,22 @@ router.post(
             throw new ForbiddenError('Viewers cannot create page');
         }
 
-        const pageId = Number(req.params.pageId);
+        const workspaceId = Number(req.params.workspaceId);
         const { title, parentPageId} = req.body;
 
-        const updated = await Repo.updatePage( pageId, {
+        const page = await Repo.createPage(
+            workspaceId,
+            req.user.id,
             title,
-            parentPageId,
-        })
+            parentPageId
+        )
 
-        new SuccessResponse('Page updates successfully', updated).send(res);
+        new SuccessResponse('Page updates successfully', page).send(res);
     })
 )
 
 router.get(
-    '/pageId',
+    '/:pageId',
     authentication,
     isWorkspaceMember,
     asyncHandler(async(req:ProtectedRequest, res) => {
@@ -58,7 +60,7 @@ router.get(
 )
 
 router.patch(
-    '/pageId',
+    '/:pageId',
     authentication,
     isWorkspaceMember,
     asyncHandler(async(req:ProtectedRequest, res) => {
@@ -74,7 +76,7 @@ router.patch(
 )
 
 router.delete(
-    '/pageId',
+    '/:pageId',
     authentication,
     isWorkspaceMember,
     asyncHandler(async(req:ProtectedRequest, res) => {

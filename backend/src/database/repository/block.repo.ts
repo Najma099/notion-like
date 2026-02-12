@@ -1,5 +1,7 @@
 import { prisma } from "..";
-import { BlockType } from '@prisma/client';
+import { BlockType, Prisma } from '@prisma/client';
+import { validateBlockContent } from '../../middleware/blocks.validate';
+import { getDefaultBlockContent } from '../../types/blocks.defaults';
 
 export async function getBlockByPageId(pageId: number) {
     return prisma.block.findMany({
@@ -13,6 +15,9 @@ export async function getBlockByPageId(pageId: number) {
 }
 
 export async function createBlock(pageId: number, type:BlockType, content: unknown, position?: number) {
+    const finalContent = content ?? getDefaultBlockContent(type);
+    validateBlockContent(type, finalContent);
+
     return prisma.$transaction(async(tx) => {
         const lastBlock = await tx.block.findFirst({
             where: {pageId},
@@ -26,22 +31,34 @@ export async function createBlock(pageId: number, type:BlockType, content: unkno
             data: {
                 pageId,
                 type,
-                content,
+                content: finalContent,
                 position: newPosition,
             },
         });
     })
 }
 
-export async function updateBlock(blockId: number, content:unknown) {
-    return prisma.block.update({
-        where:{
-            id: blockId
-        },
-        data: {
-            content
-        }
+export async function updateBlock(
+  blockId: number,
+  content: unknown,
+) {
+  return prisma.$transaction(async (tx) => {
+    const block = await tx.block.findUnique({
+      where: { id: blockId },
+      select: { type: true },
     });
+
+    if (!block) {
+      throw new Error('Block not found');
+    }
+
+    validateBlockContent(block.type, content);
+
+    return tx.block.update({
+      where: { id: blockId },
+      data: {content: content as Prisma.InputJsonValue},
+    });
+  });
 }
 
 export async function deleteBlock(blockId: number) {
