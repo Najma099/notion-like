@@ -115,8 +115,6 @@ class ApiClient {
   } catch (err) {
     //console.error("Refresh failed, clearing and redirecting", err);
     this.clearTokens();
-    // Redirect to root "/" to avoid the 404 on "/signin"
-    //if (typeof window !== "undefined") window.location.href = "/";
     throw err;
   }
 }
@@ -164,12 +162,11 @@ class ApiClient {
    try {
     const res = await this.axiosInstance.request<BackendResponse<T>>(config);
     return res.data.data;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
+  } catch (error) {
     // 🔥 FORCE AXIOS TO PASS THE BACKEND ERROR DOWN
     // If the error has a response, it's our 400 "Password too short" error.
-    if (error.response) {
-      throw error; 
+    if (error instanceof AxiosError) {
+      throw error;
     }
     throw new Error("Network error");
   }
@@ -185,6 +182,10 @@ class ApiClient {
 
   public delete<T>(url: string, config?: AxiosRequestConfig) {
     return this.request<T>({ ...config, method: "DELETE", url });
+  }
+
+  public patch<T, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig) {
+    return this.request<T>({ ...config, method: "PATCH", url, data });
   }
 }
 

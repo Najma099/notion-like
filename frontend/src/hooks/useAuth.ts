@@ -1,85 +1,90 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import apiClient from "@/lib/apiClient";
-import type { User } from "@/types/auth.type";
-import { toast } from "sonner";
 
-const STORAGE_USER = "user";
+import { AuthContext } from "@/context/AuthContext";
+import { useContext } from "react";
 
-async function fetchCurrentUser(): Promise<User | null> {
-  if (typeof window === "undefined") return null;
 
-  const stored = localStorage.getItem(STORAGE_USER);
-  if (stored) {
-    try {
-      return JSON.parse(stored) as User;
-    } catch {
-      localStorage.removeItem(STORAGE_USER);
-    }
-  }
+// async function fetchCurrentUser(): Promise<User | null> {
+//   if (typeof window === "undefined") return null;
 
-  const token = apiClient.getAccessToken();
-  if (!token) return null;
+//   const stored = localStorage.getItem(STORAGE_USER);
+//   if (stored) {
+//     try {
+//       return JSON.parse(stored) as User;
+//     } catch {
+//       localStorage.removeItem(STORAGE_USER);
+//     }
+//   }
 
-  try {
-    const user = await apiClient.get<User>("/auth/me");
-    if (user) {
-      localStorage.setItem(STORAGE_USER, JSON.stringify(user));
-    }
-    return user ?? null;
-  } catch {
-    return null;
-  }
-}
+//   const token = apiClient.getAccessToken();
+//   if (!token) return null;
 
-export function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
+//   try {
+//     const user = await apiClient.get<User>("/auth/me");
+//     if (user) {
+//       localStorage.setItem(STORAGE_USER, JSON.stringify(user));
+//     }
+//     return user ?? null;
+//   } catch {
+//     return null;
+//   }
+// }
 
-  const refreshUser = useCallback(async () => {
-    const token = apiClient.getAccessToken();
+// export function useAuth() {
+//   const [user, setUser] = useState<User | null>(null);
+//   const [loading, setLoading] = useState(true);
+//   const router = useRouter();
 
-    if (!token) {
-      setUser(null);
-      localStorage.removeItem(STORAGE_USER);
-      setLoading(false);
-      return;
-    }
+//   const refreshUser = useCallback(async () => {
+//     const token = apiClient.getAccessToken();
 
-    try {
-      const currentUser = await fetchCurrentUser();
-      setUser(currentUser);
-      if (currentUser) {
-        apiClient.startTokenRefreshTimer();
-      }
-    } catch (err) {
-      console.error("Auth check failed", err);
-      toast.error("Please login again.");
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+//     if (!token) {
+//       setUser(null);
+//       localStorage.removeItem(STORAGE_USER);
+//       setLoading(false);
+//       return;
+//     }
 
-  useEffect(() => {
-    refreshUser();
-  }, [refreshUser]);
+//     try {
+//       const currentUser = await fetchCurrentUser();
+//       setUser(currentUser);
+//       if (currentUser) {
+//         apiClient.startTokenRefreshTimer();
+//       }
+//     } catch (err) {
+//       console.error("Auth check failed", err);
+//       toast.error("Please login again.");
+//       setUser(null);
+//     } finally {
+//       setLoading(false);
+//     }
+//   }, []);
 
-  const logout = useCallback(() => {
-    apiClient.clearTokens();
+//   useEffect(() => {
+//     refreshUser();
+//   }, [refreshUser]);
 
-    void apiClient.delete("/auth/signout").catch(() => {});
-    setUser(null);
-    router.push("/");
-  }, [router]);
+//   const logout = useCallback(() => {
+//     apiClient.clearTokens();
 
-  return {
-    user,
-    loading,
-    logout,
-    refreshUser,
-  };
-}
+//     void apiClient.delete("/auth/signout").catch(() => {});
+//     setUser(null);
+//     router.push("/");
+//   }, [router]);
+
+//   return {
+//     user,
+//     loading,
+//     logout,
+//     refreshUser,
+//   };
+// }
+
+
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error("useAuth must be used within AuthProvider");
+  return context;
+};

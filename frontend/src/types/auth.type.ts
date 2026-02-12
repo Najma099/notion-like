@@ -15,9 +15,7 @@ export interface AuthSignin {
 
 export interface AuthResponse {
   tokens: Tokens;
-  user: {
-    id: number;
-    name: string;
-    email: string;
-  };
+  user: User;
 }
+
+
