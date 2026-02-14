@@ -6,7 +6,7 @@ import { createPage } from "@/lib/page.api";
 import { usePage } from "@/hooks/usePage";
 import { useWorkspace } from "@/context/WorkspaceContext";
 import PagesList from "./PageList";
-import Spinner from "@/components/ui/Spinner"; 
+import { Spinner }from "@/components/ui/Spinner"; 
 import { Plus } from "lucide-react";
 
 export default function PagesSidebar() {
@@ -50,14 +50,14 @@ export default function PagesSidebar() {
           onClick={() => setIsCreating(true)}
           className="p-1 text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded transition-colors disabled:opacity-50"
         >
-          {isSubmitting || loading ? <Spinner size={14} /> : <Plus size={14} />}
+          {isSubmitting || loading ? <Spinner /> : <Plus size={14} />}
         </button>
       </div>
 
       {isCreating && (
         <div className="flex items-center gap-2 px-2 py-1">
           {isSubmitting ? (
-            <Spinner size={14} />
+            <Spinner  />
           ) : (
             <div className="w-3.5 h-3.5 rounded-sm border border-zinc-300" />
           )}

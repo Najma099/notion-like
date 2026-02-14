@@ -1,6 +1,6 @@
 import { Router } from "express";
 import authentication from "../auth/authentication";
-import { isWorkspaceMember } from "../../middleware/workspacePermission";
+import { isPageMember } from "../../middleware/pagePermission";
 import { asyncHandler } from "../../core/asyncHandler";
 import { ProtectedRequest } from "../../types/app-requests";
 import * as BlockRepo from '../../database/repository/block.repo'
@@ -12,7 +12,7 @@ const router = Router({mergeParams: true});
 router.get(
     '/',
     authentication,
-    isWorkspaceMember,
+    isPageMember,
     asyncHandler(async(req:ProtectedRequest, res) => {
         const pageId = Number(req.params.pageId);
         const blocks = await BlockRepo.getBlockByPageId(pageId);
@@ -23,7 +23,7 @@ router.get(
 router.post(
     '/',
     authentication,
-    isWorkspaceMember,
+    isPageMember,
     asyncHandler( async(req:ProtectedRequest, res) => {
         if(req.userRole == 'VIEWER') {
             throw new ForbiddenError("Viewer cannot create blocks!");
@@ -46,7 +46,7 @@ router.post(
 router.patch(
     '/',
     authentication,
-    isWorkspaceMember,
+    isPageMember,
     asyncHandler(async (req: ProtectedRequest, res) => {
     if (req.userRole === 'VIEWER') {
       throw new ForbiddenError('Viewers cannot reorder blocks');
@@ -64,7 +64,7 @@ router.patch(
 router.patch(
     '/:blockId',
     authentication,
-    isWorkspaceMember,
+    isPageMember,
     asyncHandler( async(req:ProtectedRequest, res) => {
         if (req.userRole === 'VIEWER') {
             throw new ForbiddenError('Viewers cannot edit blocks');
@@ -82,7 +82,7 @@ router.patch(
 router.delete(
   '/:blockId',
   authentication,
-  isWorkspaceMember,
+  isPageMember,
   asyncHandler(async (req: ProtectedRequest, res) => {
     if (req.userRole === 'VIEWER') {
       throw new ForbiddenError('Viewers cannot delete blocks');
