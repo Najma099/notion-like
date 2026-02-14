@@ -19,7 +19,7 @@ export const updateWorkspace = async (
   workspaceId: number,
   name: string
 ) => {
-  const res = await apiClient.patch<ApiResponse<Workspace>>(
+  const res = await apiClient.patch<Workspace>(
     `/workspaces/${workspaceId}`,
     { name }
   );

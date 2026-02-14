@@ -1,0 +1,8 @@
+{
+    "typescript.suggest.autoImports": true,
+    "editor.quickSuggestions": {
+        "other": true,
+        "comments": false,
+        "strings": true
+    }
+}
