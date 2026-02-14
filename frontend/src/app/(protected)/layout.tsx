@@ -15,13 +15,13 @@ export default function DashboardLayout({
         <WorkSpaceSideBar />
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1">
 
         <aside className="w-[10%] min-w-50 border-r border-zinc-200 dark:border-zinc-800 overflow-y-auto">
           <PagesSidebar />
         </aside>
 
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 h-screen overflow-y-auto">
           {children}
         </main>
 

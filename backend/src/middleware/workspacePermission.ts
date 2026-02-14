@@ -4,6 +4,7 @@ import { prisma } from "../database";
 import { ProtectedRequest } from "../types/app-requests";
 
 export const isWorkspaceMember = asyncHandler(async(req: ProtectedRequest, res, next) => {
+    //console.log("isWorkspaceMember hit", req.originalUrl);
     const workspaceId = Number(req.params.workspaceId);
     const userId = req.user.id;
 
