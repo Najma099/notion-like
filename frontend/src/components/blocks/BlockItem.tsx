@@ -1,3 +1,5 @@
+/* eslint-disable prefer-const */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -32,6 +34,9 @@ export default function BlockItem({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const [currentType, setCurrentType] = useState(block.type);
+  const [currentContent, setCurrentContent] = useState(block.content);
+
   useEffect(() => {
     if (isLast && !block.content.text) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -44,27 +49,39 @@ export default function BlockItem({
       inputRef.current.focus();
       inputRef.current.setSelectionRange(content.length, content.length);
     }
-  }, [isEditing]);
+  }, [isEditing, content.length]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setContent(block.content.text || "");
-  }, [block.content.text]);
+    setCurrentType(block.type);
+    setCurrentContent(block.content);
+  }, [block.content, block.type, block.id]);
 
   const handleSave = async () => {
+    if (showSlashMenu) {
+      setIsEditing(false);
+      return;
+    }
+
     if (content === block.content.text) {
       setIsEditing(false);
       return;
     }
 
-    optimisticUpdate(block.id, { content: { ...block.content, text: content } });
+    const newContent = { ...currentContent, text: content };
+
+    optimisticUpdate(block.id, { content: newContent });
+    setCurrentContent(newContent);
     setIsEditing(false);
 
+    if (block.id < 0) return;
+
     try {
-      await updateBlock(pageId, block.id, { text: content });
-    } catch (error) {
-      console.error("Failed to update block:", error);
-      optimisticUpdate(block.id, { content: { ...block.content, text: block.content.text || "" } });
+      await updateBlock(pageId, block.id, newContent);
+    } catch {
+      optimisticUpdate(block.id, { content: block.content });
+      setCurrentContent(block.content);
     }
   };
 
@@ -76,82 +93,109 @@ export default function BlockItem({
       return;
     }
 
-    if (showSlashMenu && e.key !== "/" && e.key !== "ArrowUp" && e.key !== "ArrowDown" && e.key !== "Enter") {
-      if (e.key === "Backspace" && content === "/") {
-        setShowSlashMenu(false);
-        setContent("");
-      }
+    if (e.key === "Backspace" && content === "/" && showSlashMenu) {
+      e.preventDefault();
+      setShowSlashMenu(false);
+      setContent("");
+      return;
+    }
+
+    if (e.key === "Escape" && showSlashMenu) {
+      e.preventDefault();
+      setShowSlashMenu(false);
+      setContent("");
+      return;
     }
 
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       if (showSlashMenu) {
         setShowSlashMenu(false);
+        setContent("");
         return;
       }
       await handleSave();
       onCreateBelow(block.position + 1);
+      return;
     }
 
     if (e.key === "Escape") {
       setContent(block.content.text || "");
       setIsEditing(false);
       setShowSlashMenu(false);
+      return;
     }
 
     if (e.key === "Backspace" && content === "" && block.position > 0) {
       e.preventDefault();
       onDelete(block.id);
+      return;
     }
   };
 
-const handleConvertType = async (newType: BlockType) => {
-  const textContent = content.replace("/", "").trim();
-  
-  let newContent: any = {
-    text: textContent
-  };
+  const handleConvertType = async (newType: BlockType) => {
+    const textContent = content.replace("/", "").trim();
 
-  switch (newType) {
-    case BlockType.TODO:
-      newContent.checked = false;  
-      break;
-    case BlockType.CODE:
-      newContent.code = textContent;  
-      break;
-  }
+    let newContent: any = {
+      ...currentContent,
+      text: textContent
+    };
 
-  optimisticUpdate(block.id, { 
-    type: newType, 
-    content: newContent
-  });
-  setContent(textContent);
-  setShowSlashMenu(false);
-  setIsEditing(false);
+    switch (newType) {
+      case BlockType.TODO:
+        newContent.checked = false;
+        delete newContent.code;
+        break;
+      case BlockType.CODE:
+        newContent.code = textContent;
+        delete newContent.checked;
+        break;
+      default:
+        delete newContent.checked;
+        delete newContent.code;
+        break;
+    }
 
-  try {
-     updateBlock(pageId, block.id, newContent, newType);
-  } catch {
+    setCurrentType(newType);
+    setCurrentContent(newContent);
+    setContent(textContent);
+    setShowSlashMenu(false);
+    setIsEditing(false);
+
     optimisticUpdate(block.id, { 
-      type: block.type,
-      content: block.content
+      type: newType, 
+      content: newContent
     });
-  }
-};
-  const handleCheckboxChange = async (checked: boolean) => {
-    optimisticUpdate(block.id, { 
-      content: { ...block.content, checked } 
-    });
+
+    if (block.id < 0) return;
 
     try {
-      await updateBlock(pageId, block.id, { 
-        text: block.content.text || "",
-        checked 
-      });
-    } catch  {
+      await updateBlock(pageId, block.id, newContent, newType);
+    } catch {
+      setCurrentType(block.type);
+      setCurrentContent(block.content);
+      setContent(block.content.text || "");
       optimisticUpdate(block.id, { 
-        content: { ...block.content, checked: !checked } 
+        type: block.type,
+        content: block.content
       });
+    }
+  };
+
+  const handleCheckboxChange = async (checked: boolean) => {
+    const newContent = { ...currentContent, checked };
+    
+    setCurrentContent(newContent);
+    optimisticUpdate(block.id, { content: newContent });
+
+    if (block.id < 0) return;
+
+    try {
+      await updateBlock(pageId, block.id, newContent);
+    } catch {
+      const revertContent = { ...currentContent, checked: !checked };
+      setCurrentContent(revertContent);
+      optimisticUpdate(block.id, { content: revertContent });
     }
   };
 
@@ -183,9 +227,12 @@ const handleConvertType = async (newType: BlockType) => {
               target.style.height = target.scrollHeight + "px";
             }}
           />
-          
+
           {showSlashMenu && (
-            <div className="fixed z-50 mt-1 w-72 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl overflow-hidden">
+            <div 
+              className="fixed z-50 mt-1 w-72 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl overflow-hidden"
+              onMouseDown={(e) => e.preventDefault()}
+            >
               <div className="p-1">
                 {blockTypeOptions.map((option) => (
                   <button
@@ -211,12 +258,12 @@ const handleConvertType = async (newType: BlockType) => {
       );
     }
 
-    const displayContent = block.content.text || "";
+    const displayContent = currentContent.text || "";
 
-    switch (block.type) {
+    switch (currentType) {
       case BlockType.HEADING_1:
         return (
-          <h1 
+          <h1
             className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 cursor-text py-1"
             onClick={() => setIsEditing(true)}
           >
@@ -225,7 +272,7 @@ const handleConvertType = async (newType: BlockType) => {
         );
       case BlockType.HEADING_2:
         return (
-          <h2 
+          <h2
             className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100 cursor-text py-1"
             onClick={() => setIsEditing(true)}
           >
@@ -237,15 +284,15 @@ const handleConvertType = async (newType: BlockType) => {
           <div className="flex items-start gap-2 py-1">
             <input
               type="checkbox"
-              checked={block.content.checked || false}
+              checked={currentContent.checked || false}
               onChange={(e) => {
                 e.stopPropagation();
                 handleCheckboxChange(e.target.checked);
               }}
               className="mt-1.5 cursor-pointer"
             />
-            <span 
-              className={`cursor-text flex-1 ${block.content.checked ? "line-through text-zinc-400" : "text-zinc-900 dark:text-zinc-100"}`}
+            <span
+              className={`cursor-text flex-1 ${currentContent.checked ? "line-through text-zinc-400" : "text-zinc-900 dark:text-zinc-100"}`}
               onClick={() => setIsEditing(true)}
             >
               {displayContent}
@@ -254,7 +301,7 @@ const handleConvertType = async (newType: BlockType) => {
         );
       case BlockType.CODE:
         return (
-          <pre 
+          <pre
             className="bg-zinc-100 dark:bg-zinc-900 p-3 rounded-md font-mono text-sm cursor-text my-1"
             onClick={() => setIsEditing(true)}
           >
@@ -263,7 +310,7 @@ const handleConvertType = async (newType: BlockType) => {
         );
       default:
         return (
-          <p 
+          <p
             className="text-zinc-900 dark:text-zinc-100 cursor-text min-h-[28px] py-0.5"
             onClick={() => setIsEditing(true)}
           >
@@ -274,7 +321,7 @@ const handleConvertType = async (newType: BlockType) => {
   };
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className="group relative py-1 px-2 -mx-2 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 rounded transition-colors"
       onMouseEnter={() => setShowMenu(true)}
@@ -296,7 +343,7 @@ const handleConvertType = async (newType: BlockType) => {
               <DropdownMenu.Label className="px-2 py-1.5 text-xs text-zinc-500 font-medium">
                 Turn into
               </DropdownMenu.Label>
-              
+
               {blockTypeOptions.map((option) => (
                 <DropdownMenu.Item
                   key={option.type}
