@@ -29,6 +29,7 @@ export default function PagesList({
   const [title, setTitle] = useState("");
 
   const pageIdFromUrl = params.pageId;
+  const workspaceId = activeWorkspace?.id; 
 
   const handleRename = async (pageId: number) => {
     if (!activeWorkspace || !title.trim()) return;
@@ -73,7 +74,7 @@ export default function PagesList({
         return (
           <div key={page.id} className="relative group">
             <Link 
-              href={`/pages/${page.id}`}
+              href={`/workspace/${workspaceId}/pages/${page.id}`}
               className={`flex items-center justify-between px-2 py-1 rounded-md text-sm transition-colors ${
                 isActive 
                   ? "bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100" 

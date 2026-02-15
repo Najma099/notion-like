@@ -18,7 +18,7 @@ interface AuthModalProps {
 export default function AuthModal({ isOpen, onClose, initialMode = "login" }: AuthModalProps) {
   const router = useRouter();
   const { refreshUser } = useAuth(); 
-  const { refreshWorkspaces } = useWorkspace();
+  const { refreshWorkspaces, activeWorkspace, workspaces } = useWorkspace();
   const searchParams = useSearchParams();
   const [authMode, setAuthMode] = useState(initialMode);
   const [isLoading, setIsLoading] = useState(false);
@@ -38,13 +38,17 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }: Au
       localStorage.setItem("user", JSON.stringify(res.user));
 
       await refreshUser();
-      await refreshWorkspaces();
-
+      const freshWorkspaces = await refreshWorkspaces();
+      console.log("freshWorkspaces", freshWorkspaces);
    
       toast.success(authMode === "register" ? "Welcome to Notion!" : "Welcome back!");
       onClose();
       
-      const redirectTo = searchParams.get("redirect") || "/workspace";
+      const redirectTo = searchParams.get("redirect") || 
+      (freshWorkspaces.length > 0 
+        ? `/workspace/${freshWorkspaces[0].id}` 
+        : "/wprkspace/9");
+        console.log("redirectTo", redirectTo);
       router.push(redirectTo);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {

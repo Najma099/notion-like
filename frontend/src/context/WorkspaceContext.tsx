@@ -18,7 +18,7 @@ interface WorkspaceContextType {
   setWorkspaces: React.Dispatch<React.SetStateAction<Workspace[]>>;
   setActiveWorkspace: React.Dispatch<React.SetStateAction<Workspace | null>>;
   switchWorkspace: (workspace: Workspace) => void;
-  refreshWorkspaces: () => Promise<void>;
+  refreshWorkspaces: () => Promise<Workspace[]>;
   addWorkspace: (name: string) => Promise<Workspace>;
   renameWorkspace: (id: number, name: string) => Promise<Workspace>;
   removeWorkspace: (id: number) => Promise<void>;
@@ -39,7 +39,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       setWorkspaces([]);
       setActiveWorkspace(null);
       setIsLoading(false);
-      return;
+      return [];
     }
 
     try {
@@ -56,8 +56,10 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       } else {
         setActiveWorkspace(null);
       }
+      return data;
     } catch (err) {
       console.error("Error fetching workspaces:", err);
+      return [];
     } finally {
       setIsLoading(false);
     }

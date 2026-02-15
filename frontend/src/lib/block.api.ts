@@ -34,9 +34,15 @@ export function reorderBlocks(
 export function updateBlock(
   pageId: number,
   blockId: number,
-  content: BlockContent 
+  content: BlockContent,
+  type?: BlockType
 ) {
   return apiClient.patch<Block>(`/pages/${pageId}/blocks/${blockId}`, {
     content,
+    ...(type && { type })
   });
+}
+
+export function deleteBlock(pageId: number, blockId: number) {
+  return apiClient.delete(`/pages/${pageId}/blocks/${blockId}`);
 }

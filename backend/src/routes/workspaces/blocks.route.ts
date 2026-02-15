@@ -71,9 +71,9 @@ router.patch(
         }
 
         const blockId = Number(req.params.blockId);
-        const { content } = req.body;
-
-        const updated = await BlockRepo.updateBlock(blockId, content);
+        const { content, type } = req.body;
+        
+        const updated = await BlockRepo.updateBlock(blockId, content, type);
 
         new SuccessResponse('Block updated', updated).send(res);
     })

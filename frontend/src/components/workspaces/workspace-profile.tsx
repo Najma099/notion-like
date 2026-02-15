@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useWorkspace } from '@/context/WorkspaceContext';
 import { useAuth } from '@/hooks/useAuth';
 import { 
@@ -29,6 +30,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import WorkspaceCreateModal from './workspaceCreateModal';
 
 export default function WorkSpaceProfile() {
+  const router = useRouter();
   const { 
     workspaces, 
     activeWorkspace, 
@@ -79,6 +81,11 @@ export default function WorkSpaceProfile() {
     }
   };
 
+   const handleWorkspaceSwitch = (workspace: any) => {
+    switchWorkspace(workspace);
+    router.push(`/workspace/${workspace.id}`);
+  };
+
   return (
     <div className="w-full px-2 py-4">
       <DropdownMenu>
@@ -126,7 +133,7 @@ export default function WorkSpaceProfile() {
                 return (
                   <div key={workspace.id} className="relative group/item">
                     <DropdownMenuItem
-                      onSelect={() => !isProcessing && switchWorkspace(workspace)}
+                      onSelect={() => !isProcessing && handleWorkspaceSwitch(workspace)}
                       className={`flex items-center gap-2 p-2 cursor-pointer rounded-md transition-all ${
                         isActive 
                           ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-medium" 

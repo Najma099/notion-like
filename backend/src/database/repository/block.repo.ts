@@ -41,6 +41,7 @@ export async function createBlock(pageId: number, type:BlockType, content: unkno
 export async function updateBlock(
   blockId: number,
   content: unknown,
+  type?: BlockType,
 ) {
   return prisma.$transaction(async (tx) => {
     const block = await tx.block.findUnique({
@@ -52,12 +53,23 @@ export async function updateBlock(
       throw new Error('Block not found');
     }
 
-    validateBlockContent(block.type, content);
+    const blockType = type || block.type;
+    validateBlockContent(blockType, content);
 
-    return tx.block.update({
+    const updateData: any = {
+      content: content as Prisma.InputJsonValue,
+    };
+
+    if (type) {
+      updateData.type = type;
+    }
+
+    const updated = await tx.block.update({
       where: { id: blockId },
-      data: {content: content as Prisma.InputJsonValue},
+      data: updateData,
     });
+
+    return updated;
   });
 }
 

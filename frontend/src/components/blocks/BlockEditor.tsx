@@ -1,10 +1,18 @@
 "use client";
 
-import { useBlocks } from "../../hooks/useBlock";
+import { useBlocks } from "@/hooks/useBlock";
 import BlockList from "./BlockList";
 
 export default function BlockEditor({ pageId }: { pageId: number }) {
-  const { blocks, loading, refetchBlocks } = useBlocks(pageId);
+  const { 
+    blocks, 
+    loading, 
+    refetchBlocks, 
+    optimisticUpdateBlock,
+    optimisticDeleteBlock,
+    optimisticAddBlock,
+    setBlocks
+  } = useBlocks(pageId);
 
   return (
     <div className="max-w-3xl mx-auto py-12 px-6">
@@ -13,6 +21,10 @@ export default function BlockEditor({ pageId }: { pageId: number }) {
         loading={loading} 
         pageId={pageId}
         refetchBlocks={refetchBlocks}
+        optimisticUpdateBlock={optimisticUpdateBlock}
+        optimisticDeleteBlock={optimisticDeleteBlock}
+        optimisticAddBlock={optimisticAddBlock}
+        setBlocks={setBlocks}
       />
     </div>
   );
