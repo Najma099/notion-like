@@ -14,7 +14,7 @@ export function createPage(workspaceId: number, title: string) {
 export function updatePage(
   workspaceId: number,
   pageId: number,
-  data: { title?: string; parentPageId?: number | null }
+  data: { icon?: string; coverImage?: string; title?: string; parentPageId?: number | null }
 ) {
   return apiClient.patch(
     `/workspaces/${workspaceId}/pages/${pageId}`,
@@ -28,3 +28,6 @@ export function deletePage(workspaceId: number, pageId: number) {
   );
 }
 
+export async function fetchPageById(workspaceId:number,pageId: number) {
+  return apiClient.get<Page>(`/workspaces/${workspaceId}/pages/${pageId}`);
+}

@@ -68,9 +68,9 @@ router.patch(
             throw new ForbiddenError('Viewers cannot edit pages');
         }
         const pageId = Number(req.params.pageId);
-        const { title, parentPageId } = req.body;
+        const { title, parentPageId, icon, coverImage } = req.body;
 
-        const updated = await Repo.updatePage(pageId, {title, parentPageId});
+        const updated = await Repo.updatePage(pageId, {title, parentPageId, icon, coverImage});
         new SuccessResponse('Page updated successfully', updated).send(res);
     })
 )

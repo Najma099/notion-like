@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Block, BlockType } from "@/types/block.type";
 import { updateBlock } from "@/lib/block.api";
 import { MoreHorizontal, Trash, Type, ListTodo, Code, Heading1, Heading2 } from "lucide-react";
@@ -15,6 +15,7 @@ interface BlockItemProps {
   onDelete: (blockId: number) => void;
   onCreateBelow: (position: number) => void;
   isLast: boolean;
+  isFirst: boolean;
   optimisticUpdate: (blockId: number, updates: Partial<Block>) => void;
 }
 
@@ -25,6 +26,7 @@ export default function BlockItem({
   onDelete,
   onCreateBelow,
   isLast,
+  isFirst,
   optimisticUpdate
 }: BlockItemProps) {
   const [isEditing, setIsEditing] = useState(false);
@@ -37,6 +39,14 @@ export default function BlockItem({
   const [currentType, setCurrentType] = useState(block.type);
   const [currentContent, setCurrentContent] = useState(block.content);
 
+  // --- FIX 1: Auto-resize textarea helper ---
+  const autoResize = useCallback(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, []);
+
   useEffect(() => {
     if (isLast && !block.content.text) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -47,16 +57,26 @@ export default function BlockItem({
   useEffect(() => {
     if (isEditing && inputRef.current) {
       inputRef.current.focus();
-      inputRef.current.setSelectionRange(content.length, content.length);
+      // Place cursor at end
+      const len = inputRef.current.value.length;
+      inputRef.current.setSelectionRange(len, len);
+      // Trigger resize after focus
+      autoResize();
     }
-  }, [isEditing, content.length]);
+  }, [isEditing, autoResize]);
 
+  // Re-sync when block prop changes externally
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setContent(block.content.text || "");
     setCurrentType(block.type);
     setCurrentContent(block.content);
   }, [block.content, block.type, block.id]);
+
+  // Resize whenever content changes
+  useEffect(() => {
+    if (isEditing) autoResize();
+  }, [content, isEditing, autoResize]);
 
   const handleSave = async () => {
     if (showSlashMenu) {
@@ -115,6 +135,7 @@ export default function BlockItem({
         return;
       }
       await handleSave();
+      // --- FIX 4: pass correct next position ---
       onCreateBelow(block.position + 1);
       return;
     }
@@ -126,6 +147,7 @@ export default function BlockItem({
       return;
     }
 
+    // Only delete block on backspace if content is truly empty
     if (e.key === "Backspace" && content === "" && block.position > 0) {
       e.preventDefault();
       onDelete(block.id);
@@ -207,60 +229,89 @@ export default function BlockItem({
     { type: BlockType.CODE, icon: Code, label: "Code", description: "Capture a code snippet" },
   ];
 
-  const renderBlock = () => {
-    if (isEditing) {
-      return (
-        <>
-          <textarea
-            ref={inputRef}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            onBlur={handleSave}
-            onKeyDown={handleKeyDown}
-            className="w-full bg-transparent outline-none resize-none overflow-hidden min-h-[28px] text-zinc-900 dark:text-zinc-100"
-            placeholder="Type '/' for commands..."
-            rows={1}
-            style={{ height: "auto" }}
-            onInput={(e) => {
-              const target = e.target as HTMLTextAreaElement;
-              target.style.height = "auto";
-              target.style.height = target.scrollHeight + "px";
-            }}
-          />
+  // --- FIX 3: Effective type — first block always renders as Heading 1 ---
+  const effectiveType = isFirst ? BlockType.HEADING_1 : currentType;
 
-          {showSlashMenu && (
-            <div 
-              className="fixed z-50 mt-1 w-72 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl overflow-hidden"
-              onMouseDown={(e) => e.preventDefault()}
-            >
-              <div className="p-1">
-                {blockTypeOptions.map((option) => (
-                  <button
-                    key={option.type}
-                    onClick={() => handleConvertType(option.type)}
-                    className="w-full flex items-start gap-3 px-3 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition-colors text-left"
-                  >
-                    <option.icon size={18} className="text-zinc-500 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                        {option.label}
-                      </div>
-                      <div className="text-xs text-zinc-500">
-                        {option.description}
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </>
-      );
-    }
+  const getPlaceholder = () => {
+    if (isFirst) return "Untitled";
+    return "Type '/' for commands...";
+  };
+
+  // --- FIX 1: Shared textarea with proper auto-resize ---
+  const renderTextarea = () => (
+    <>
+      <textarea
+        ref={inputRef}
+        value={content}
+        onChange={(e) => {
+          setContent(e.target.value);
+        }}
+        onBlur={handleSave}
+        onKeyDown={handleKeyDown}
+        className={`
+          w-full bg-transparent outline-none resize-none overflow-hidden
+          leading-snug
+          ${isFirst
+            ? "text-3xl font-bold text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-300 dark:placeholder:text-zinc-600 min-h-10"
+            : effectiveType === BlockType.HEADING_2
+              ? "text-2xl font-semibold text-zinc-900 dark:text-zinc-100 min-h-8"
+              : effectiveType === BlockType.CODE
+                ? "font-mono text-sm text-zinc-900 dark:text-zinc-100 bg-zinc-100 dark:bg-zinc-900 p-3 rounded-md min-h-7"
+                : "text-zinc-900 dark:text-zinc-100 min-h-7"
+          }
+        `}
+        placeholder={getPlaceholder()}
+        rows={1}
+        // height managed purely by autoResize; no inline onInput needed
+      />
+
+      {showSlashMenu && (
+        <div 
+          className="fixed z-50 mt-1 w-72 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl overflow-hidden"
+          onMouseDown={(e) => e.preventDefault()}
+        >
+          <div className="p-1">
+            {blockTypeOptions.map((option) => (
+              <button
+                key={option.type}
+                onClick={() => handleConvertType(option.type)}
+                className="w-full flex items-start gap-3 px-3 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition-colors text-left"
+              >
+                <option.icon size={18} className="text-zinc-500 mt-0.5 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                    {option.label}
+                  </div>
+                  <div className="text-xs text-zinc-500">
+                    {option.description}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </>
+  );
+
+  const renderBlock = () => {
+    if (isEditing) return renderTextarea();
 
     const displayContent = currentContent.text || "";
 
-    switch (currentType) {
+    // First block always shows as Heading 1
+    if (isFirst) {
+      return (
+        <h1
+          className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 cursor-text py-1 min-h-10"
+          onClick={() => setIsEditing(true)}
+        >
+          {displayContent || <span className="text-zinc-300 dark:text-zinc-600 font-bold">Untitled</span>}
+        </h1>
+      );
+    }
+
+    switch (effectiveType) {
       case BlockType.HEADING_1:
         return (
           <h1
@@ -311,7 +362,7 @@ export default function BlockItem({
       default:
         return (
           <p
-            className="text-zinc-900 dark:text-zinc-100 cursor-text min-h-[28px] py-0.5"
+            className="text-zinc-900 dark:text-zinc-100 cursor-text min-h-7 py-0.5"
             onClick={() => setIsEditing(true)}
           >
             {displayContent}
@@ -327,7 +378,7 @@ export default function BlockItem({
       onMouseEnter={() => setShowMenu(true)}
       onMouseLeave={() => setShowMenu(false)}
     >
-      <div className={`absolute left-[-30px] top-2 transition-opacity ${showMenu ? "opacity-100" : "opacity-0"}`}>
+      <div className={`absolute -left-7 top-2 transition-opacity ${showMenu && !isFirst ? "opacity-100" : "opacity-0"}`}>
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
             <button className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded">

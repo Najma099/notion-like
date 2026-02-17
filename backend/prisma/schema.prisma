@@ -61,6 +61,8 @@ model Page {
   parentPageId Int?     @map("parent_page_id")
   title        String
   createdBy    Int      @map("created_by")
+  icon        String?
+  coverImage  String?
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 

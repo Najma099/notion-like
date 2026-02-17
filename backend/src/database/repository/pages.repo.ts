@@ -43,6 +43,8 @@ export async function getWorkspaceData(workspaceId: number) {
         id: true,
         title: true,
         parentPageId: true,
+        icon:true,
+        coverImage:true,
         createdAt: true,
         updatedAt: true,
       },
@@ -65,6 +67,8 @@ export async function getPagesByWorkspace(workspaceId: number) {
             id: true,
             title: true,
             parentPageId: true,
+            icon:true,
+            coverImage:true,
             createdAt: true,
             updatedAt: true,
         },
@@ -82,6 +86,8 @@ export async function getPageById(pageId: number) {
             parentPage:true,
             childPages:true,
             workspaceId: true,
+            icon:true,
+            coverImage:true,
             createdAt: true,
             updatedAt: true,
         },
@@ -120,6 +126,8 @@ export async function updatePage(
     data: {
         title?: string;
         parentPageId?: number | null;
+        icon?: string;
+        coverImage?: string;
     }
 ) {
     return prisma.page.update({
@@ -128,6 +136,8 @@ export async function updatePage(
         select: {
             id: true,
             title: true,
+            icon: true, 
+            coverImage: true,
             parentPageId: true,
             updatedAt: true,
         },
