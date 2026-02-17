@@ -97,6 +97,7 @@ export default function BlockList({
             onUpdate={refetchBlocks}
             onDelete={handleDelete}
             onCreateBelow={handleCreateBelow}
+            isFirst={index === 0}
             isLast={index === blocks.length - 1}
             optimisticUpdate={optimisticUpdateBlock}
           />
