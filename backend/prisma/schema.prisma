@@ -107,6 +107,13 @@ model Block {
   @@map("block")
 }
 
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
+}
+
 model WorkspaceInvite {
   id          Int      @id @default(autoincrement())
   workspaceId Int
@@ -115,6 +122,7 @@ model WorkspaceInvite {
   token       String   @unique
   invitedBy   Int
   expiresAt   DateTime
+  status      InviteStatus @default(PENDING)
   createdAt   DateTime @default(now())
 
   workspace Workspace @relation(fields: [workspaceId], references: [id])

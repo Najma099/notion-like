@@ -16,7 +16,7 @@ export default router.use(
   validateRequest(AuthHeaderSchema, 'headers'),
   asyncHandler(async (req: ProtectedRequest, _res, next) => {
     const accessToken = getAccessToken(req);
-
+    console.log(req.params);
     try {
       const payload = await JWT.validate(accessToken);
       validateAccessToken(payload as AccessTokenPayload);

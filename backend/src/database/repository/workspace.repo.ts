@@ -84,7 +84,6 @@ export async function getWorkspaceById(workspaceId: number, userId: number) {
     })
 };
 
-
 export async function updateWorkspace(workspaceId: number, name: string) {
     const updated = await prisma.workspace.update({
         where: {
@@ -94,6 +93,14 @@ export async function updateWorkspace(workspaceId: number, name: string) {
             name
         }
     })
+}
+
+export async function getWorkpsaceByWorkspaceId(workspaceId: number) {
+    return prisma.workspace.findUnique({
+        where: {
+            id: workspaceId
+        }
+    });
 }
 
 export async function deleteWorkspace(workspaceId: number) {
@@ -122,4 +129,18 @@ export async function deleteWorkspace(workspaceId: number) {
             }
         })
     ]);
+}
+
+export async function findWorkspaceMember(
+  workspaceId: number,
+  userId: number
+) {
+  return prisma.workspaceMember.findUnique({
+    where: {
+      workspaceId_userId: {
+        workspaceId,
+        userId,
+      },
+    },
+  });
 }

@@ -9,9 +9,12 @@ import { Router } from 'express';
 import workspaceRouter from './workspace.route';
 import workspaceIdRouter from './workspaceId.route';
 import pagesRoute from './pages.route';
+import inviteRoute from './invites.route';
 
-const router = Router();
-router.use('/', workspaceRouter);
+const router = Router({ mergeParams: true });
 router.use('/:workspaceId/pages', pagesRoute);
+router.use('/:workspaceId/invite',inviteRoute);
 router.use('/:workspaceId',  workspaceIdRouter);
+router.use('/', workspaceRouter);
+
 export default router;

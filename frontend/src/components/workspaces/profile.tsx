@@ -7,7 +7,6 @@ export default function Profile() {
     
     return (
         <div>
-            {/* icon + name */}
             <div>
                 <div className="w-4 h-4 rounded-3xl">
                     {user?.name[0].toUpperCase()}
