@@ -15,12 +15,12 @@ router.get(
   asyncHandler(async (req: ProtectedRequest, res) => {
     const userId = req.user.id;
 
-    const workspaces =
-      await WorkspaceRepo.getOrCreateDefaultWorkspace(userId);
+    const workspaces = await WorkspaceRepo.getAllWorkspacesForUser(userId);
+    console.log(workspaces);
 
     new SuccessResponse(
       'Workspaces fetched successfully',
-      workspaces,
+      workspaces
     ).send(res);
   }),
 );

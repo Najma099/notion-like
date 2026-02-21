@@ -58,7 +58,7 @@ export default function WorkspaceCreateModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-106.25">
         <form onSubmit={handleCreate}>
           <DialogHeader>
             <DialogTitle>Create Workspace</DialogTitle>
@@ -94,7 +94,7 @@ export default function WorkspaceCreateModal({
             <Button 
               type="submit" 
               disabled={isLoading || !name.trim()}
-              className="min-w-[120px]"
+              className="min-w-30"
             >
               {isLoading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

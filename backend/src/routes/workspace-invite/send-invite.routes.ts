@@ -1,16 +1,20 @@
-import { Response } from "express";
+import { Router } from "express";
+import authentication from "../auth/authentication";
+import { isWorkspaceMember } from "../../middleware/workspacePermission";
+import { isAdmin } from "../../middleware/isAdmin";
+import { sendWorkspaceInviteEmail } from "../../services/email.service";
+import { createWorkspaceInvite } from "../../database/repository/workspaceInvite";
+import { BadRequestError } from "../../core/ApiError";
+import { asyncHandler } from "../../core/asyncHandler";
+import { ProtectedRequest } from "../../types/app-requests";
+import { getWorkpsaceByWorkspaceId } from "../../database/repository/workspace.repo";
 import crypto from "crypto";
-import { asyncHandler } from "../core/asyncHandler";
-import { ProtectedRequest } from "../types/app-requests";
-import { createWorkspaceInvite } from "../database/repository/workspaceInvite";
-import { getWorkpsaceByWorkspaceId } from "../database/repository/workspace.repo";
-import { sendWorkspaceInviteEmail } from "../services/email.service";
-import { BadRequestError } from "../core/ApiError";
 import { RoleType } from "@prisma/client";
 
-export const sendInvite = asyncHandler(
-  async (req: ProtectedRequest, res: Response) => {
-    //console.log()
+const router = Router({ mergeParams: true });
+
+router.post('/', authentication, isWorkspaceMember, isAdmin, asyncHandler<ProtectedRequest>(
+  async (req, res) => {
     const { email, role } = req.body;
     const workspaceId = Number(req.workspaceId);
 
@@ -50,4 +54,6 @@ export const sendInvite = asyncHandler(
       message: "Invite sent successfully",
     });
   }
-);
+));
+
+export default router;

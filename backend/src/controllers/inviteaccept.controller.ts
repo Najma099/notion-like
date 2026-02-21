@@ -1,7 +1,7 @@
 import { Response } from "express";
 import { AuthFailureError, BadRequestError } from "../core/ApiError";
 import { asyncHandler } from "../core/asyncHandler";
-import { SuccessMsgResponse } from "../core/ApiResponse";
+import { SuccessMsgResponse, SuccessResponse } from "../core/ApiResponse";
 import { ProtectedRequest } from "../types/app-requests";
 import {
   addUserToWorkspace,
@@ -26,6 +26,10 @@ export const acceptWorkspaceInvite = asyncHandler(
       throw new BadRequestError("Invalid invite link");
     }
 
+    if (invite.email !== user.email) {
+      throw new BadRequestError("This invite was sent to a different email address");
+    }
+
     if (invite.expiresAt < new Date()) {
       throw new BadRequestError("Invite expired");
     }
@@ -47,6 +51,6 @@ export const acceptWorkspaceInvite = asyncHandler(
 
     await deleteInvite(invite.id);
 
-    new SuccessMsgResponse("Successfully joined workspace").send(res);
+    new SuccessResponse('Invite accepted successfully',{workspaceId: invite.workspaceId}).send(res);
   }
 );

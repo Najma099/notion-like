@@ -58,16 +58,25 @@ export async function getAllWorkspacesForUser(userId: number) {
   return prisma.workspace.findMany({
     where: {
       members: {
-        some: { userId },
+        some: { userId }, 
       },
     },
     include: {
       members: {
-        where: { userId },
-        select: { role: true },
+        select: { 
+          userId: true, 
+          role: true, 
+          user: { select: { name: true } } 
+        },
+      },
+      owner: {
+        select: { id: true, name: true }, 
+      },
+      _count: {
+        select: { members: true }, 
       },
     },
-    orderBy: { id: 'asc' },
+    orderBy: { id: "asc" },
   });
 }
 

@@ -1,14 +1,15 @@
-"use client";
+'use client';
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { acceptWorkspaceInvite } from "@/lib/invite.api";
 import { useWorkspace } from "@/context/WorkspaceContext";
 
-export default function InvitePage({ params }: { params: { token: string } }) {
+export default function InvitePage() {
   const router = useRouter();
+  const params = useParams<{ token: string }>(); 
   const { refreshWorkspaces } = useWorkspace();
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState("");
@@ -16,6 +17,9 @@ export default function InvitePage({ params }: { params: { token: string } }) {
   useEffect(() => {
     const handleAccept = async () => {
       try {
+        console.log(params);
+        
+        if (!params.token) return;
         const { workspaceId } = await acceptWorkspaceInvite(params.token);
         await refreshWorkspaces();
         

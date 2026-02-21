@@ -13,7 +13,7 @@ export default function Invitesend() {
 
   return (
     <>
-      <Button onClick={() => setShowModal(true)}>
+      <Button className="bg-black text-white" onClick={() => setShowModal(true)}>
         Invite
       </Button>
 

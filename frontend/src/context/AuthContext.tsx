@@ -17,23 +17,23 @@ const STORAGE_USER = 'user';
 interface AuthContextType {
     user: User | null;
     loading: boolean;
-    logout: () => void;
+    logout: () => Promise<void>;
     refreshUser: () => Promise<void>;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(
-    undefined,
-);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-async function fetchCurrentUser(): Promise<User | null> {
+async function fetchCurrentUser(forceRefresh = false): Promise<User | null> {
     if (typeof window === 'undefined') return null;
 
-    const stored = localStorage.getItem(STORAGE_USER);
-    if (stored) {
-        try {
-            return JSON.parse(stored) as User;
-        } catch {
-            localStorage.removeItem(STORAGE_USER);
+    if (!forceRefresh) {
+        const stored = localStorage.getItem(STORAGE_USER);
+        if (stored) {
+            try {
+                return JSON.parse(stored) as User;
+            } catch {
+                localStorage.removeItem(STORAGE_USER);
+            }
         }
     }
 
@@ -67,7 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         try {
-            const currentUser = await fetchCurrentUser();
+            const currentUser = await fetchCurrentUser(true);
             setUser(currentUser);
             if (currentUser) {
                 apiClient.startTokenRefreshTimer();
@@ -85,12 +85,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         refreshUser();
     }, [refreshUser]);
 
-    const logout = useCallback(() => {
-        apiClient.clearTokens();
-
-        void apiClient.delete('/auth/signout').catch(() => {});
-        setUser(null);
-        router.push('/');
+    const logout = useCallback(async () => {
+        try {
+            await apiClient.delete('/auth/signout');
+        } catch {
+            
+        } finally {
+            apiClient.clearTokens();
+            localStorage.removeItem(STORAGE_USER);
+            setUser(null);
+            router.push('/');
+        }
     }, [router]);
 
     return (

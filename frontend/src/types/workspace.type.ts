@@ -1,7 +1,11 @@
+import { User } from "./auth.type";
+
 export interface Workspace {
-  id: number;
-  name: string;
-  ownerId: number;
-  createdAt: string;   
-  updatedAt: string;   
+    _count: { members: number };
+    id: number;
+    name: string;
+    ownerId: number;
+    createdAt: string;
+    updatedAt: string;
+    owner: User
 }

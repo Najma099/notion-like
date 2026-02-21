@@ -12,10 +12,14 @@ export default function WorkspaceLayout({
         <Protected>
             <div className="flex h-screen">
                 <WorkSpaceSideBar />
-                <Invitesend/>
-                <main className="flex-1 overflow-y-auto bg-white dark:bg-zinc-950">
-                    {children}
-                </main>
+                <div className="flex flex-col flex-1 overflow-hidden">
+                    <header className="h-10 border- border-zinc-200 dark:border-zinc-800 flex items-center justify-start px-4">
+                        <Invitesend />
+                    </header>
+                    <main className="flex-1 overflow-y-auto dark:bg-zinc-950">
+                        {children}
+                    </main>
+                </div>
             </div>
         </Protected>
     );
