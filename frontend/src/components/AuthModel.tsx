@@ -18,7 +18,7 @@ interface AuthModalProps {
 export default function AuthModal({ isOpen, onClose, initialMode = "login" }: AuthModalProps) {
   const router = useRouter();
   const { refreshUser } = useAuth(); 
-  const { refreshWorkspaces, activeWorkspace, workspaces } = useWorkspace();
+  const { refreshWorkspaces } = useWorkspace();
   const searchParams = useSearchParams();
   const [authMode, setAuthMode] = useState(initialMode);
   const [isLoading, setIsLoading] = useState(false);
@@ -33,7 +33,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }: Au
       const payload = authMode === "register" ? formData : { email: formData.email, password: formData.password };
       
       const res = await apiClient.post<AuthResponse>(endpoint, payload);
-      
+      console.log("FULL RESPONSE:", res);
       apiClient.setTokens(res.tokens);
       localStorage.setItem("user", JSON.stringify(res.user));
 

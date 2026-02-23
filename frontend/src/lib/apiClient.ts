@@ -44,7 +44,6 @@ class ApiClient {
   public getRefreshToken = () => localStorage.getItem("refreshToken");
 
  public setTokens(tokens: Tokens): void {
-  console.log("Setting tokens:", tokens);
   if (tokens.accessToken) localStorage.setItem("accessToken", tokens.accessToken);
   if (tokens.refreshToken) localStorage.setItem("refreshToken", tokens.refreshToken);
   this.startTokenRefreshTimer();
@@ -94,13 +93,10 @@ class ApiClient {
   const expiredToken = this.getAccessToken();
 
   try {
-    // res.data will be { statusCode, message, data: { accessToken, refreshToken } }
     const res = await axios.post(`${API_BASE_URL}/auth/token/refresh`, 
       { refreshToken },
       { headers: { Authorization: `Bearer ${expiredToken}` } }
     );
-
-    //console.log("Refresh API raw response:", res.data);
 
     const newTokens = res.data.data; 
     
@@ -109,11 +105,8 @@ class ApiClient {
     }
 
     this.setTokens(newTokens);
-    //console.log("Tokens successfully updated in storage");
-    
     return newTokens.accessToken;
   } catch (err) {
-    //console.error("Refresh failed, clearing and redirecting", err);
     this.clearTokens();
     throw err;
   }
@@ -163,8 +156,6 @@ class ApiClient {
     const res = await this.axiosInstance.request<BackendResponse<T>>(config);
     return res.data.data;
   } catch (error) {
-    // 🔥 FORCE AXIOS TO PASS THE BACKEND ERROR DOWN
-    // If the error has a response, it's our 400 "Password too short" error.
     if (error instanceof AxiosError) {
       throw error;
     }

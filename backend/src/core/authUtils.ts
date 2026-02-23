@@ -32,6 +32,7 @@ export const validateAccessToken = (payload: AccessTokenPayload): boolean => {
     payload.aud !== tokenInfo.audience ||
     !/^\d+$/.test(payload.sub)
   ) {
+    
     throw new AuthFailureError('Invalid Access Token');
   }
   return true;

@@ -9,11 +9,13 @@ export default function BlockList({
   blocks,
   loading,
   pageId,
-  refetchBlocks,
   optimisticUpdateBlock,
   optimisticDeleteBlock,
   optimisticAddBlock,
   setBlocks,
+  sendWsMessage,
+  canEdit,  
+  sendCursorToBlock,
 }: {
   blocks: Block[];
   loading: boolean;
@@ -23,11 +25,14 @@ export default function BlockList({
   optimisticDeleteBlock: (blockId: number) => void;
   optimisticAddBlock: (newBlock: Block) => void;
   setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
+  sendWsMessage: (msg: Record<string, unknown>) => void;
+  canEdit: boolean;   
+   sendCursorToBlock?: (blockId: number) => void;
 }) {
 
   const handleCreateBelow = async (position: number) => {
     const tempId = -Date.now();
-    
+
     const tempBlock: Block = {
       id: tempId,
       pageId,
@@ -42,10 +47,14 @@ export default function BlockList({
 
     try {
       const realBlock = await createBlock(pageId, BlockType.PARAGRAPH, { text: "" }, position);
-      
       setBlocks(prev => {
         const filtered = prev.filter(b => b.id !== tempId);
         return [...filtered, realBlock].sort((a, b) => a.position - b.position);
+      });
+      sendWsMessage({
+        type: "block_create",
+        tempId,
+        realBlock,
       });
     } catch (error) {
       console.error("Failed to create block:", error);
@@ -56,18 +65,18 @@ export default function BlockList({
 
   const handleDelete = async (blockId: number) => {
     const deletedBlock = blocks.find(b => b.id === blockId);
-    
     optimisticDeleteBlock(blockId);
 
     try {
       await deleteBlock(pageId, blockId);
+      sendWsMessage({
+        type: "block_delete",
+        blockId,
+      });
     } catch (error) {
       console.error("Failed to delete block:", error);
       toast.error("Failed to delete block");
-      
-      if (deletedBlock) {
-        optimisticAddBlock(deletedBlock);
-      }
+      if (deletedBlock) optimisticAddBlock(deletedBlock);
     }
   };
 
@@ -82,7 +91,7 @@ export default function BlockList({
   return (
     <div className="space-y-1">
       {blocks.length === 0 ? (
-        <div 
+        <div
           className="text-zinc-400 cursor-text py-2 px-2 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 rounded transition-colors"
           onClick={() => handleCreateBelow(0)}
         >
@@ -94,12 +103,13 @@ export default function BlockList({
             key={block.id}
             block={block}
             pageId={pageId}
-            onUpdate={refetchBlocks}
             onDelete={handleDelete}
             onCreateBelow={handleCreateBelow}
             isFirst={index === 0}
             isLast={index === blocks.length - 1}
             optimisticUpdate={optimisticUpdateBlock}
+            sendWsMessage={sendWsMessage}
+            sendCursorToBlock={canEdit ? sendCursorToBlock : undefined}
           />
         ))
       )}

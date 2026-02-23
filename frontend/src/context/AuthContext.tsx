@@ -41,7 +41,8 @@ async function fetchCurrentUser(forceRefresh = false): Promise<User | null> {
     if (!token) return null;
 
     try {
-        const user = await apiClient.get<User>('/auth/me');
+        const response = await apiClient.get<{user: User}>('/auth/me');
+        const user = response.user;
         if (user) {
             localStorage.setItem(STORAGE_USER, JSON.stringify(user));
         }

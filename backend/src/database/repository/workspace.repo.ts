@@ -55,7 +55,7 @@ export async function create(userId: number, name:string) {
 }
 
 export async function getAllWorkspacesForUser(userId: number) {
-  return prisma.workspace.findMany({
+   const workspaces = await prisma.workspace.findMany({
     where: {
       members: {
         some: { userId }, 
@@ -78,6 +78,11 @@ export async function getAllWorkspacesForUser(userId: number) {
     },
     orderBy: { id: "asc" },
   });
+
+  return workspaces.map((w) => ({
+    ...w,
+    role: w.members.find((m) => m.userId === userId)?.role ?? "VIEWER",
+  }));
 }
 
 export async function getWorkspaceById(workspaceId: number, userId: number) {
