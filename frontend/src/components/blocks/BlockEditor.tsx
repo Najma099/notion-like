@@ -14,8 +14,8 @@ import { toast } from "sonner";
 import { useWebSocket } from "@/hooks/useWebsockets";
 import { useCursor } from "@/hooks/useCursor";
 import CursorOverlay from "@/components/CursonOverlay";
-import VersionHistoryPanel from "@/components/version/VersionHistoryPanel";
-import { useVersionSave } from "@/hooks/useVersionSave";
+// import VersionHistoryPanel from "@/components/version/VersionHistoryPanel";
+// import { useVersionSave } from "@/hooks/useVersionSave";
 
 export default function BlockEditor({ pageId }: { pageId: number }) {
   const { activeWorkspace } = useWorkspace();
@@ -37,7 +37,7 @@ export default function BlockEditor({ pageId }: { pageId: number }) {
   const synced = useRef(false);
 
   const canEdit = activeWorkspace?.role !== "VIEWER";
-  const { scheduleVersionSave, flushVersionSave } = useVersionSave(pageId);
+  // const { scheduleVersionSave, flushVersionSave } = useVersionSave(pageId);
 
   // Reset on page navigation
   useEffect(() => {
@@ -56,11 +56,11 @@ export default function BlockEditor({ pageId }: { pageId: number }) {
   }, [page]);
 
   // Flush version save on unmount
-  useEffect(() => {
-    return () => {
-      if (blocks.length > 0) flushVersionSave(blocks);
-    };
-  }, [blocks, flushVersionSave]);
+  // useEffect(() => {
+  //   return () => {
+  //     if (blocks.length > 0) flushVersionSave(blocks);
+  //   };
+  // }, [blocks, flushVersionSave]);
 
   // Central WS message handler
   const handleMessage = useCallback(
@@ -128,9 +128,9 @@ export default function BlockEditor({ pageId }: { pageId: number }) {
   const handleOptimisticUpdate = useCallback(
     (blockId: number, updates: Partial<Block>) => {
       optimisticUpdateBlock(blockId, updates);
-      scheduleVersionSave(blocks);
+      //scheduleVersionSave(blocks);
     },
-    [optimisticUpdateBlock, scheduleVersionSave, blocks]
+    [optimisticUpdateBlock, blocks]
   );
 
   const handleIconChange = async (newIcon: string) => {
