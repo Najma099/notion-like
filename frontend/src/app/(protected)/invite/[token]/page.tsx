@@ -29,9 +29,9 @@ export default function InvitePage() {
         setTimeout(() => {
           router.push(`/workspace/${workspaceId}`);
         }, 1500);
-      } catch (err: any) {
+      } catch (err: unknown) {
         setStatus("error");
-        const message = err.response?.data?.message || "Invalid invitation";
+        const message = (err as { response?: { data?: { message?: string } } }).response?.data?.message || "Invalid invitation";
         setErrorMessage(message);
         toast.error(message);
       }

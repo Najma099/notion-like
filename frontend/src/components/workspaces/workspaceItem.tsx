@@ -2,13 +2,11 @@ import {
     DropdownMenu,
     DropdownMenuItem,
     DropdownMenuTrigger,
-} from '@radix-ui/react-dropdown-menu';
-import { Check, Loader2, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
-import { Button } from '../ui/button';
-import {
     DropdownMenuContent,
     DropdownMenuSeparator,
 } from '../ui/dropdown-menu';
+import { Check, Loader2, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { Button } from '../ui/button';
 import { Workspace } from '@/types/workspace.type';
 import { User } from '@/types/auth.type';
 
@@ -17,8 +15,8 @@ interface WorkspaceItemProps {
     isActive: boolean;
     isProcessing: boolean;
     handleWorkspaceSwitch: (workspace: Workspace) => void;
-    handleRename: (e: React.SyntheticEvent, id: number, name: string) => void;
-    handleDelete: (e: React.SyntheticEvent, id: number, name: string) => void;
+    handleRename: (e: Event, id: number, name: string) => void;
+    handleDelete: (e: Event, id: number, name: string) => void;
     showOwner?: boolean;
     user?: User | null
 }
@@ -68,7 +66,7 @@ export default function WorkspaceItem({
                         <span className="text-[10px] text-zinc-400 ml-1">
                             (Shared
                             {showOwner
-                                ? workspace.owner?.id === user?.user?.id
+                                ? workspace.owner?.id === user?.id
                                     ? ' by you'
                                     : workspace.owner?.name
                                       ? ` by ${workspace.owner.name}`

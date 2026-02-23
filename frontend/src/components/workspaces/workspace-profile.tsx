@@ -48,7 +48,7 @@ export default function WorkSpaceProfile() {
     </div>
   );
 
-  const handleDelete = async (e: React.SyntheticEvent, id: number, name: string) => {
+  const handleDelete = async (e: Event, id: number, name: string) => {
     e.stopPropagation();
     if (!confirm(`Delete "${name}"?`)) return;
 
@@ -63,7 +63,7 @@ export default function WorkSpaceProfile() {
     }
   };
 
-  const handleRename = async (e: React.SyntheticEvent, id: number, currentName: string) => {
+  const handleRename = async (e: Event, id: number, currentName: string) => {
     e.stopPropagation();
     const newName = prompt("Rename workspace:", currentName);
     if (!newName || newName === currentName) return;
@@ -84,7 +84,7 @@ export default function WorkSpaceProfile() {
     router.push(`/workspace/${workspace.id}`);
   };
 
-  // Separate personal vs shared workspaces
+  
   const personalWorkspaces = workspaces.filter(w => (w._count?.members || 1) === 1);
   const sharedWorkspaces = workspaces.filter(w => (w._count?.members || 1) > 1);
 

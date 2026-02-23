@@ -22,6 +22,17 @@ router.post(
 
         const tokens = await createTokens(user.id);
         const userData = getUserData(user);
+
+        const responsePayload = {
+            user: userData,
+            tokens: tokens,
+        };
+
+        console.log("==== BACKEND RESPONSE ====");
+        console.log(responsePayload);
+        console.log("Type of user:", typeof responsePayload.user);
+        console.log("Type of tokens:", typeof responsePayload.tokens);
+        console.log("==========================");
         new SuccessResponse('Login success.', {
             user: userData,
             tokens: tokens,

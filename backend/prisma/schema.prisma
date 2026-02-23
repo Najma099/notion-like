@@ -55,6 +55,21 @@ model WorkspaceMember {
   @@unique([workspaceId, userId])
 }
 
+model PageVersion {
+  id            Int      @id @default(autoincrement())
+  pageId        Int
+  versionNumber Int
+  blocks        Json
+  createdAt     DateTime @default(now())
+  createdBy     String
+  label         String?
+
+  page          Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@index([pageId, createdAt(sort: Desc)])
+  @@unique([pageId, versionNumber])
+}
+
 model Page {
   id           Int      @id @default(autoincrement())
   workspaceId  Int      @map("workspace_id")
@@ -71,7 +86,8 @@ model Page {
   parentPage Page?     @relation("PageHierarchy", fields: [parentPageId], references: [id])
   childPages Page[]    @relation("PageHierarchy")
   blocks     Block[]
-
+  versions  PageVersion[]
+  
   @@index([workspaceId])
   @@map("page")
 }
