@@ -13,7 +13,7 @@ class WsClient {
 
   connect(url: string, joinPayload: Record<string, unknown>) {
     console.log("WS connecting to:", url);
-    this.url = url;
+    this.url = process.env.NEXT_PUBLIC_WS_URL!;
     this.joinPayload = joinPayload;
     this.shouldReconnect = true;
     this._open();
