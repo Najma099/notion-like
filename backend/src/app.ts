@@ -8,7 +8,6 @@ import { errorHandler } from './middleware/error.middleware';
 import { NotFoundError } from './core/ApiError';
 
 
-
 process.on('uncaughtException', (err) => {
   console.log(err);
   process.exit(1);
@@ -26,7 +25,6 @@ app.use(cors({
   credentials: true,
   optionsSuccessStatus: 200,
 }));
-app.options("*", cors());
 app.use(cookieParser());
 
 
