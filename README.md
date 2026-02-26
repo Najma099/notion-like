@@ -5,20 +5,18 @@ This project is a backend-heavy implementation of a Notion-like workspace system
 Rather than relying on managed backends or real-time databases, this project focuses on data modeling, authentication, authorization, and consistency guarantees — the parts that are hardest to get right.
 
 > **MVP is complete and actively evolving.** Core features are live and working. The project is being improved iteratively.
-
 ---
 
 ## Tech Stack
 
 **Backend** — Node.js, Express, Prisma ORM, PostgreSQL, `ws` (raw WebSockets), JWT
 
-**Frontend** — React, TypeScript, Vite
+**Frontend** — React, TypeScript, NextJs
 
 **Infra** — Frontend on Vercel, backend on Render, PostgreSQL hosted on Neon
 
 ---
 
----
 
 ## Overview
 
@@ -37,6 +35,10 @@ The application allows users to create and join workspaces, manage hierarchical 
 - Secure JWT authentication with refresh token rotation
 - Optimistic UI updates with backend reconciliation
 - Transaction-safe backend operations
+
+
+<img width="276" height="459" alt="Screenshot 2026-02-26 at 11 05 06" src="https://github.com/user-attachments/assets/2fa0c8ff-7c79-48d2-890b-21a5fe25c153" />
+<img width="607" height="261" alt="Screenshot 2026-02-26 at 10 48 49" src="https://github.com/user-attachments/assets/18566813-ea94-4a26-9900-57d9c1d67c8a" />
 
 ---
 
@@ -67,7 +69,9 @@ Alice and Bob open the same page
 → When Alice closes that tab, the cursor disappears — no ghost cursors
 ```
 
-> Screenshots and a walkthrough video coming soon.
+<img width="1466" height="827" alt="Screenshot 2026-02-26 at 10 55 29" src="https://github.com/user-attachments/assets/8c1132c2-e530-4be0-842b-d61f05c19779" />
+
+<img width="1470" height="796" alt="Screenshot 2026-02-26 at 10 54 18" src="https://github.com/user-attachments/assets/dd8a325c-babf-4fb3-8fb5-82f2b5a65c87" />
 
 
 
@@ -225,3 +229,4 @@ Right now the focus is on cleaning up the codebase and polishing what's already 
 ## Status
 
 **MVP complete — actively iterating.** The core workspace, collaboration, and content editing experience is functional and deployed. Focus now is on polish and consistency before the next round of features.
+
