@@ -24,6 +24,23 @@ The application allows users to create and join workspaces, manage hierarchical 
 
 ---
 
+## Demo Access
+
+You can use the following test accounts to explore the live application:
+
+**User 1**  
+Email: `test@gmail.com`  
+Password: `123456`
+
+**User 2**  
+Email: `najmakhatun0999@gmail.com`  
+Password: `123456`
+
+> Note: Email invitations are currently disabled in the live demo because the Resend account does not have a verified domain. To test collaboration, please log in using the two accounts above in separate browsers or incognito windows.
+
+---
+
+
 ## Core Features
 
 - Multi-tenant workspace architecture with role-based access control (Admin / Editor / Viewer)
@@ -41,6 +58,7 @@ The application allows users to create and join workspaces, manage hierarchical 
 <img width="607" height="261" alt="Screenshot 2026-02-26 at 10 48 49" src="https://github.com/user-attachments/assets/18566813-ea94-4a26-9900-57d9c1d67c8a" />
 
 ---
+
 
 ## Architectural Decisions
 
